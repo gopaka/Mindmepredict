@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MindMePredict - Nifty Strangle Copilot & Options Intelligence</title>
+  <meta name="description" content="Institutional-grade options decision-support agent for Nifty short strangle strategies. Real-time Greeks, India VIX fear radar, global news sentiment, and statistical range predictor.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="dark-theme">
+  <!-- Top Navigation & Live Ticker -->
+  <header class="app-header">
+    <div class="header-left">
+      <div class="logo-badge">
+        <span class="logo-icon">⚡</span>
+        <div class="logo-text">
+          <span class="brand-title">MINDME<span class="highlight">PREDICT</span></span>
+          <span class="brand-tag">STRANGLE COPILOT AI</span>
+        </div>
+      </div>
+      <div class="live-pulse-container">
+        <span class="pulse-dot"></span>
+        <span class="pulse-text" id="market-status-label">LIVE MARKET FEED</span>
+      </div>
+    </div>
+
+    <!-- Live Ticker Strip -->
+    <div class="ticker-ribbon" id="ticker-ribbon">
+      <div class="ticker-item">
+        <span class="ticker-label">NIFTY 50</span>
+        <span class="ticker-val" id="ticker-nifty-spot">23,070.05</span>
+        <span class="ticker-change up" id="ticker-nifty-change">+45.20 (+0.20%)</span>
+      </div>
+      <div class="ticker-divider"></div>
+      <div class="ticker-item">
+        <span class="ticker-label">INDIA VIX</span>
+        <span class="ticker-val" id="ticker-vix-val">15.28</span>
+        <span class="ticker-change down" id="ticker-vix-change">-0.35</span>
+      </div>
+      <div class="ticker-divider"></div>
+      <div class="ticker-item">
+        <span class="ticker-label">PCR</span>
+        <span class="ticker-val" id="ticker-pcr-val">1.04</span>
+        <span class="ticker-sub" id="ticker-pcr-tag">Neutral</span>
+      </div>
+      <div class="ticker-divider"></div>
+      <div class="ticker-item">
+        <span class="ticker-label">MAX PAIN</span>
+        <span class="ticker-val" id="ticker-max-pain">23,100</span>
+      </div>
+      <div class="ticker-divider"></div>
+      <div class="ticker-item">
+        <span class="ticker-label">BRENT CRUDE</span>
+        <span class="ticker-val" id="ticker-crude-val">$74.80</span>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <button class="btn btn-outline" id="btn-open-broker" title="Connect Zerodha, Upstox, or Angel One">
+        <span class="icon">🔗</span>
+        <span id="broker-btn-label">Broker Connect</span>
+        <span class="broker-status-pip simulated" id="broker-pip"></span>
+      </button>
+      <button class="btn btn-primary" id="btn-refresh-all" title="Refresh Live Market & News Data">
+        <span class="icon">🔄</span>
+        <span>Refresh</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="dashboard-grid">
+    <!-- LEFT / MAIN WORKSPACE -->
+    <section class="main-column">
+      
+      <!-- HERO: AI COPILOT DECISION CARD -->
+      <div class="card copilot-hero-card" id="copilot-verdict-card">
+        <div class="copilot-header">
+          <div class="copilot-title-group">
+            <div class="ai-badge">
+              <span class="ai-spark">✨</span>
+              <span>STRANGLE COPILOT AI AGENT</span>
+            </div>
+            <h2 class="verdict-headline" id="verdict-headline">Evaluating Strangle Position...</h2>
+          </div>
+          <div class="verdict-badge-box">
+            <span class="badge-tag-label">RECOMMENDED ACTION</span>
+            <div class="verdict-badge hold" id="verdict-badge">STRONG HOLD</div>
+            <span class="verdict-confidence" id="verdict-confidence">Confidence: 92%</span>
+          </div>
+        </div>
+
+        <p class="verdict-summary" id="verdict-summary">
+          Nifty spot is safely centered between your 21,000 PE and 24,300 CE corridor. 
+          Daily time decay is compounding in your favor. Market fear (VIX) and global macro threats remain subdued.
+        </p>
+
+        <!-- Dynamic Decision Factors Grid -->
+        <div class="decision-factors-grid" id="decision-factors-grid">
+          <!-- Populated by JavaScript -->
+        </div>
+
+        <!-- Actionable Adjustment Playbook -->
+        <div class="adjustment-playbook-box">
+          <div class="playbook-header">
+            <span class="playbook-icon">🛡️</span>
+            <h4>EXECUTION PLAYBOOK & ADJUSTMENT PROTOCOL</h4>
+          </div>
+          <ul class="playbook-list" id="playbook-list">
+            <li>Hold both legs. No immediate manual adjustment needed.</li>
+            <li>Maintain stop loss at 2x combined entry premium.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- INTERACTIVE PAYOFF GRAPH & POSITION CONTROLS -->
+      <div class="card payoff-card">
+        <div class="card-header-flex">
+          <div>
+            <h3 class="card-title">Interactive Strangle Payoff Curve</h3>
+            <span class="card-subtitle">Real-time Black-Scholes T+0 curve vs Expiry Settlement band</span>
+          </div>
+          <div class="chart-legend">
+            <span class="legend-item"><span class="legend-dot expiry"></span> Expiry Payoff</span>
+            <span class="legend-item"><span class="legend-dot today"></span> Today (T+0)</span>
+            <span class="legend-item"><span class="legend-dot spot"></span> Current Spot</span>
+            <span class="legend-item"><span class="legend-dot be"></span> Breakevens</span>
+          </div>
+        </div>
+
+        <!-- Metric KPI Strip for Strangle -->
+        <div class="position-stats-bar">
+          <div class="stat-cell">
+            <span class="stat-lbl">PUT STRIKE</span>
+            <span class="stat-num color-cyan" id="disp-put-k">21,000 PE</span>
+            <span class="stat-sub" id="disp-put-cushion">-8.9% Cushion</span>
+          </div>
+          <div class="stat-cell">
+            <span class="stat-lbl">CURRENT SPOT</span>
+            <span class="stat-num" id="disp-spot-k">23,070.05</span>
+            <span class="stat-sub" id="disp-spot-change">+45.2 pts</span>
+          </div>
+          <div class="stat-cell">
+            <span class="stat-lbl">CALL STRIKE</span>
+            <span class="stat-num color-purple" id="disp-call-k">24,300 CE</span>
+            <span class="stat-sub" id="disp-call-cushion">+5.3% Cushion</span>
+          </div>
+          <div class="stat-cell">
+            <span class="stat-lbl">WIN PROBABILITY (POP)</span>
+            <span class="stat-num color-green" id="disp-pop-val">90.2%</span>
+            <span class="stat-sub">Statistical Confidence</span>
+          </div>
+          <div class="stat-cell">
+            <span class="stat-lbl">MAX POTENTIAL PROFIT</span>
+            <span class="stat-num color-green" id="disp-max-profit">₹4,250</span>
+            <span class="stat-sub" id="disp-total-credit">85 pts (2 Lots)</span>
+          </div>
+          <div class="stat-cell">
+            <span class="stat-lbl">UNREALIZED P&L</span>
+            <span class="stat-num" id="disp-unrealized-pnl">+₹1,420</span>
+            <span class="stat-sub" id="disp-theta-harvested">33.4% Harvested</span>
+          </div>
+        </div>
+
+        <!-- Canvas Container -->
+        <div class="canvas-wrapper">
+          <canvas id="payoffCanvas" width="900" height="380"></canvas>
+          <div class="canvas-crosshair-tooltip" id="canvas-tooltip"></div>
+        </div>
+
+        <!-- Breakeven Bar Visualizer -->
+        <div class="breakeven-indicator-strip">
+          <div class="be-label left">
+            <span>Lower Breakeven</span>
+            <strong id="disp-lower-be">20,915</strong>
+          </div>
+          <div class="be-range-bar">
+            <div class="safe-zone-track">
+              <div class="spot-marker-pin" id="spot-marker-pin" style="left: 65%;">
+                <span class="spot-pin-bubble">Spot</span>
+              </div>
+            </div>
+          </div>
+          <div class="be-label right">
+            <span>Upper Breakeven</span>
+            <strong id="disp-upper-be">24,385</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- RANGE PREDICTOR & STRATEGY GENERATOR -->
+      <div class="card range-predictor-card" id="range-predictor-section">
+        <div class="card-header-flex">
+          <div>
+            <div class="badge-pill">INVEST ACCORDINGLY</div>
+            <h3 class="card-title">Range Predictor & Strategy Recommender</h3>
+            <span class="card-subtitle">Calculate statistical expected moves and deploy optimal strike corridors for upcoming expiries</span>
+          </div>
+          <div class="dte-control-group">
+            <label for="range-dte-input">Target Expiry / DTE:</label>
+            <div class="dte-input-stepper">
+              <button class="step-btn" id="btn-dte-minus">-</button>
+              <input type="number" id="range-dte-input" value="24" min="1" max="90">
+              <span class="unit">Days</span>
+              <button class="step-btn" id="btn-dte-plus">+</button>
+            </div>
+            <button class="btn btn-secondary btn-sm" id="btn-calc-ranges">Calculate Ranges</button>
+          </div>
+        </div>
+
+        <div class="expected-move-summary">
+          <div class="exp-move-pill">
+            <span>1-SD Expected Move:</span>
+            <strong id="exp-move-pts">±745 pts (±3.23%)</strong>
+          </div>
+          <span class="exp-move-note">Based on current Implied Volatility (VIX: <span id="exp-vix-val">15.28%</span>). Statistically, Nifty stays inside 1.5-SD to 2-SD corridors 86% to 95% of the time.</span>
+        </div>
+
+        <!-- 3 Strategy Option Cards -->
+        <div class="strategy-cards-grid" id="strategy-cards-grid">
+          <!-- Populated by JavaScript with Conservative, Moderate, Aggressive Tiers -->
+        </div>
+      </div>
+
+    </section>
+
+    <!-- RIGHT / METRICS & INTEL COLUMN -->
+    <aside class="side-column">
+      
+      <!-- POSITION CONTROLS DRAWER -->
+      <div class="card position-params-card">
+        <div class="card-header-flex">
+          <h3 class="card-title">Position Parameters</h3>
+          <button class="btn-text" id="btn-reset-params">Reset Nov 23</button>
+        </div>
+        
+        <form id="strangle-params-form" class="params-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="param-spot">Nifty Spot</label>
+              <input type="number" id="param-spot" step="0.05" value="23070.05">
+            </div>
+            <div class="form-group">
+              <label for="param-dte">Days to Expiry (DTE)</label>
+              <input type="number" id="param-dte" value="24" min="0.5" max="120">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="param-put-k" class="color-cyan">Put Strike (PE)</label>
+              <input type="number" id="param-put-k" step="50" value="21000">
+            </div>
+            <div class="form-group">
+              <label for="param-call-k" class="color-purple">Call Strike (CE)</label>
+              <input type="number" id="param-call-k" step="50" value="24300">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="param-put-prem">Put Entry Premium</label>
+              <input type="number" id="param-put-prem" step="0.5" value="45.0">
+            </div>
+            <div class="form-group">
+              <label for="param-call-prem">Call Entry Premium</label>
+              <input type="number" id="param-call-prem" step="0.5" value="40.0">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="param-lots">Lots (25 qty/lot)</label>
+              <input type="number" id="param-lots" value="2" min="1" max="50">
+            </div>
+            <div class="form-group">
+              <label for="param-vix">India VIX</label>
+              <input type="number" id="param-vix" step="0.1" value="15.28">
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block" id="btn-update-analysis">
+            <span>⚡ Re-Analyze & Run Copilot</span>
+          </button>
+        </form>
+
+        <!-- Quick Scenario Stress Tester -->
+        <div class="stress-test-box">
+          <span class="stress-title">QUICK SCENARIO STRESS TEST</span>
+          <div class="scenario-buttons-row">
+            <button class="btn-scenario" data-action="crash">-2% Gap Down</button>
+            <button class="btn-scenario" data-action="rally">+2% Gap Up</button>
+            <button class="btn-scenario" data-action="vix-spike">VIX +25% Spike</button>
+            <button class="btn-scenario" data-action="decay-7d">+7 Days Decay</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- LIVE GREEKS & MARKET FEAR RADAR -->
+      <div class="card market-fear-card">
+        <h3 class="card-title">Options Greeks & Volatility Radar</h3>
+        <span class="card-subtitle">Quant metrics driving your short strangle risk</span>
+
+        <!-- Fear Speedometer -->
+        <div class="gauge-container">
+          <div class="gauge-visual">
+            <svg class="speedometer-svg" viewBox="0 0 200 110">
+              <!-- Gauge Arc Background -->
+              <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#1e293b" stroke-width="18" stroke-linecap="round"/>
+              <!-- Colored Segments -->
+              <path d="M 20 100 A 80 80 0 0 1 65 35" fill="none" stroke="#3b82f6" stroke-width="18" stroke-dasharray="1 1" opacity="0.8"/>
+              <path d="M 65 35 A 80 80 0 0 1 135 35" fill="none" stroke="#10b981" stroke-width="18" opacity="0.8"/>
+              <path d="M 135 35 A 80 80 0 0 1 165 65" fill="none" stroke="#f59e0b" stroke-width="18" opacity="0.8"/>
+              <path d="M 165 65 A 80 80 0 0 1 180 100" fill="none" stroke="#ef4444" stroke-width="18" stroke-linecap="round" opacity="0.8"/>
+              <!-- Needle Pointer -->
+              <line id="gauge-needle" x1="100" y1="100" x2="60" y2="40" stroke="#00f2fe" stroke-width="3.5" stroke-linecap="round"/>
+              <circle cx="100" cy="100" r="7" fill="#00f2fe"/>
+            </svg>
+            <div class="gauge-value-display">
+              <span class="gauge-num" id="gauge-vix-num">15.28</span>
+              <span class="gauge-tag" id="gauge-vix-label">Optimal Theta Zone</span>
+            </div>
+          </div>
+          <p class="gauge-commentary" id="gauge-commentary">
+            India VIX is within the 12 - 16 sweet spot. Option prices reflect stable mean-reversion, maximizing time decay efficiency.
+          </p>
+        </div>
+
+        <!-- 4 Greeks KPI Cards -->
+        <div class="greeks-metrics-grid">
+          <div class="greek-item">
+            <div class="greek-top">
+              <span class="greek-name">DAILY THETA</span>
+              <span class="badge-mini pos">+Income</span>
+            </div>
+            <span class="greek-val color-green" id="greek-theta-val">+₹223/day</span>
+            <span class="greek-sub" id="greek-theta-pts">+4.46 pts/day</span>
+          </div>
+
+          <div class="greek-item">
+            <div class="greek-top">
+              <span class="greek-name">NET DELTA</span>
+              <span class="badge-mini neutral" id="greek-delta-badge">Neutral</span>
+            </div>
+            <span class="greek-val" id="greek-delta-val">-0.024</span>
+            <span class="greek-sub">Delta neutrality near zero</span>
+          </div>
+
+          <div class="greek-item">
+            <div class="greek-top">
+              <span class="greek-name">GAMMA RISK</span>
+              <span class="badge-mini safe" id="greek-gamma-badge">Safe</span>
+            </div>
+            <span class="greek-val" id="greek-gamma-score">18 / 100</span>
+            <span class="greek-sub">Low pin risk</span>
+          </div>
+
+          <div class="greek-item">
+            <div class="greek-top">
+              <span class="greek-name">VRP SPREAD</span>
+              <span class="badge-mini pos">Seller Edge</span>
+            </div>
+            <span class="greek-val color-cyan" id="greek-vrp-val">+1.48%</span>
+            <span class="greek-sub">IV exceeds 20-day HV</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- GLOBAL NEWS & MACRO THREAT SCANNER -->
+      <div class="card news-scanner-card">
+        <div class="card-header-flex">
+          <div>
+            <h3 class="card-title">Global News & Macro Radar</h3>
+            <span class="card-subtitle">Real-time geopolitical catalysts & risk scoring</span>
+          </div>
+          <div class="threat-score-pill" id="threat-score-pill">
+            <span>Threat Score:</span>
+            <strong id="threat-score-num">28/100</strong>
+          </div>
+        </div>
+
+        <div class="threat-status-bar" id="threat-status-bar">
+          <span class="threat-dot"></span>
+          <span class="threat-msg" id="threat-msg">LOW THREAT: Global cues benign. Minimal catalyst for multi-sigma breakout.</span>
+        </div>
+
+        <!-- Macro Indicators Mini Strip -->
+        <div class="macro-indicators-strip">
+          <div class="macro-item">
+            <span class="macro-name">Brent Crude</span>
+            <span class="macro-val" id="macro-brent">$74.80</span>
+            <span class="macro-sub down">-0.6%</span>
+          </div>
+          <div class="macro-item">
+            <span class="macro-name">US 10Y Yield</span>
+            <span class="macro-val" id="macro-10y">4.18%</span>
+            <span class="macro-sub down">-2.4 bps</span>
+          </div>
+          <div class="macro-item">
+            <span class="macro-name">Dollar Index</span>
+            <span class="macro-val" id="macro-dxy">103.85</span>
+            <span class="macro-sub up">+0.1%</span>
+          </div>
+        </div>
+
+        <!-- News Headlines List -->
+        <div class="news-feed-list" id="news-feed-list">
+          <!-- Populated by JavaScript -->
+        </div>
+      </div>
+
+    </aside>
+  </main>
+
+  <!-- BROKER CONNECT MODAL -->
+  <div class="modal-backdrop" id="broker-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <span class="modal-icon">🔗</span>
+          <div>
+            <h3 class="modal-title">Indian Broker Integration</h3>
+            <p class="modal-desc">Connect Zerodha Kite Connect, Upstox, or Angel One to sync live positions & orders.</p>
+          </div>
+        </div>
+        <button class="modal-close" id="btn-close-modal">&times;</button>
+      </div>
+
+      <!-- Broker Tabs -->
+      <div class="broker-tabs">
+        <button class="tab-btn active" data-broker="zerodha">Zerodha Kite</button>
+        <button class="tab-btn" data-broker="upstox">Upstox</button>
+        <button class="tab-btn" data-broker="angelone">Angel One SmartAPI</button>
+        <button class="tab-btn" data-broker="simulated">Live Market Mode</button>
+      </div>
+
+      <form id="broker-config-form" class="modal-body">
+        <div id="fields-zerodha" class="broker-fields-group">
+          <div class="form-group">
+            <label for="kite-api-key">Kite API Key</label>
+            <input type="text" id="kite-api-key" placeholder="e.g. 29xkd01mzk..." autocomplete="off">
+          </div>
+          <div class="form-group">
+            <label for="kite-api-secret">Kite API Secret</label>
+            <input type="password" id="kite-api-secret" placeholder="Your Kite API Secret" autocomplete="off">
+          </div>
+          <div class="form-group">
+            <label for="kite-access-token">Access Token / Request Token (Optional)</label>
+            <input type="text" id="kite-access-token" placeholder="Optional: Enter access token if already generated">
+            <small class="field-hint">Kite tokens expire daily. Enter your daily access token to stream live positions.</small>
+          </div>
+        </div>
+
+        <div id="fields-upstox" class="broker-fields-group hidden">
+          <div class="form-group">
+            <label for="upstox-api-key">Upstox API Key</label>
+            <input type="text" id="upstox-api-key" placeholder="Upstox API Key">
+          </div>
+          <div class="form-group">
+            <label for="upstox-access-token">Upstox Access Token</label>
+            <input type="text" id="upstox-access-token" placeholder="Bearer Access Token">
+          </div>
+        </div>
+
+        <div id="fields-angelone" class="broker-fields-group hidden">
+          <div class="form-group">
+            <label for="angel-client-code">Angel One Client Code</label>
+            <input type="text" id="angel-client-code" placeholder="e.g. A123456">
+          </div>
+          <div class="form-group">
+            <label for="angel-api-key">SmartAPI Key</label>
+            <input type="text" id="angel-api-key" placeholder="SmartAPI Key">
+          </div>
+          <div class="form-group">
+            <label for="angel-pin">Account MPIN</label>
+            <input type="password" id="angel-pin" placeholder="MPIN">
+          </div>
+          <div class="form-group">
+            <label for="angel-totp">TOTP Secret Key (Optional)</label>
+            <input type="password" id="angel-totp" placeholder="TOTP Secret for auto-auth">
+          </div>
+        </div>
+
+        <div id="fields-simulated" class="broker-fields-group hidden">
+          <div class="info-alert-box">
+            <strong>🚀 Live Public Data Mode Active</strong>
+            <p>You can use the platform immediately without entering broker keys. Live Nifty spot, India VIX, US VIX, PCR, and macro news will be streamed directly, and you can model and simulate your short strangle position with full fidelity.</p>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" id="btn-cancel-modal">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btn-save-broker">Connect & Sync</button>
+        </div>
+      </form>
+
+      <div id="broker-status-msg" class="broker-status-msg hidden"></div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

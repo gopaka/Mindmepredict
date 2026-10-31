@@ -3,31 +3,54 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MindMePredict - Nifty Strangle Copilot & Options Intelligence</title>
-  <meta name="description" content="Institutional-grade options decision-support agent for Nifty short strangle strategies. Real-time Greeks, India VIX fear radar, global news sentiment, and statistical range predictor.">
+  <title>MindMePredict — Institutional Strangle Terminal & Options Quant Desk</title>
+  <meta name="description" content="Institutional-grade options decision-support terminal for Nifty short strangle strategies. Real-time Greeks, India VIX fear radar, global news sentiment, and statistical range predictor.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body class="dark-theme">
-  <!-- Top Navigation & Live Ticker -->
+  <!-- Top Navigation & Live Ticker Strip -->
   <header class="app-header">
     <div class="header-left">
-      <div class="logo-badge">
-        <span class="logo-icon">⚡</span>
-        <div class="logo-text">
-          <span class="brand-title">MINDME<span class="highlight">PREDICT</span></span>
-          <span class="brand-tag">STRANGLE COPILOT AI</span>
+      <!-- Modern Geometric Brand Mark -->
+      <div class="brand-container">
+        <svg class="brand-logo-svg" width="28" height="28" viewBox="0 0 28 28" fill="none">
+          <rect width="28" height="28" rx="8" fill="url(#brandGrad)"/>
+          <path d="M6 14H8M20 14H22M8 14C8 9.5 11 7.5 14 7.5C17 7.5 20 9.5 20 14C20 18.5 17 20.5 14 20.5C11 20.5 8 18.5 8 14Z" stroke="#38bdf8" stroke-width="1.8" stroke-linecap="round"/>
+          <circle cx="14" cy="14" r="2.2" fill="#38bdf8"/>
+          <defs>
+            <linearGradient id="brandGrad" x1="0" y1="0" x2="28" y2="28" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#1e293b"/>
+              <stop offset="1" stop-color="#0f172a"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <div class="brand-text">
+          <span class="brand-title">MINDME<span class="brand-highlight">PREDICT</span></span>
+          <span class="brand-desk-tag">STRANGLE DESK</span>
         </div>
       </div>
-      <div class="live-pulse-container">
+
+      <!-- Live Market Pip -->
+      <div class="market-status-pill">
         <span class="pulse-dot"></span>
-        <span class="pulse-text" id="market-status-label">LIVE MARKET FEED</span>
+        <span class="market-status-text" id="market-status-label">LIVE FEED • NSE</span>
+      </div>
+
+      <!-- Dynamic 1-Minute Live Update Pill -->
+      <div class="dynamic-sync-pill" id="dynamic-sync-pill" title="Dynamic 1-Minute Live Auto-Sync Active">
+        <span class="sync-dot live" id="sync-dot"></span>
+        <span class="sync-label">AUTO-SYNC</span>
+        <span class="sync-countdown" id="sync-countdown">60s</span>
+        <button type="button" class="btn-micro-sync" id="btn-quick-sync" title="Force Sync Now (1-click live fetch)">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        </button>
       </div>
     </div>
 
-    <!-- Live Ticker Strip -->
+    <!-- Live Ticker Ribbon -->
     <div class="ticker-ribbon" id="ticker-ribbon">
       <div class="ticker-item">
         <span class="ticker-label">NIFTY 50</span>
@@ -42,7 +65,7 @@
       </div>
       <div class="ticker-divider"></div>
       <div class="ticker-item">
-        <span class="ticker-label">PCR</span>
+        <span class="ticker-label">PUT-CALL RATIO</span>
         <span class="ticker-val" id="ticker-pcr-val">1.04</span>
         <span class="ticker-sub" id="ticker-pcr-tag">Neutral</span>
       </div>
@@ -58,44 +81,68 @@
       </div>
     </div>
 
+    <!-- Header Actions -->
     <div class="header-actions">
+      <div class="auto-sync-toggle-wrap" title="Enable or pause dynamic 1-minute live background updates">
+        <span class="toggle-label">Dynamic Live</span>
+        <label class="switch-ui">
+          <input type="checkbox" id="toggle-auto-sync" checked>
+          <span class="slider-ui round"></span>
+        </label>
+      </div>
+
       <button class="btn btn-outline" id="btn-open-broker" title="Connect Zerodha, Upstox, or Angel One">
-        <span class="icon">🔗</span>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
         <span id="broker-btn-label">Broker Connect</span>
         <span class="broker-status-pip simulated" id="broker-pip"></span>
       </button>
-      <button class="btn btn-primary" id="btn-refresh-all" title="Refresh Live Market & News Data">
-        <span class="icon">🔄</span>
-        <span>Refresh</span>
+
+      <button class="btn btn-primary" id="btn-refresh-all" title="Refresh Live Market & News Data Now">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+        <span>Sync Now</span>
       </button>
+
+      <!-- Authenticated User Profile Pill & Lock Button -->
+      <div class="user-profile-pill" id="user-profile-pill">
+        <div class="user-avatar-badge" id="user-avatar-badge">QR</div>
+        <div class="user-meta">
+          <span class="user-name" id="user-display-name">Quant Risk Lead</span>
+          <span class="user-role" id="user-display-role">Strangle Desk</span>
+        </div>
+        <button class="btn-logout" id="btn-logout" title="Lock Terminal / Sign Out">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <span>Lock</span>
+        </button>
+      </div>
     </div>
   </header>
 
-  <!-- Main Container -->
+  <!-- Main Terminal Layout -->
   <main class="dashboard-grid">
-    <!-- LEFT / MAIN WORKSPACE -->
+    <!-- LEFT / PRIMARY QUANT WORKSPACE -->
     <section class="main-column">
       
-      <!-- HERO: AI COPILOT DECISION CARD -->
+      <!-- HERO: QUANTITATIVE DESK VERDICT CARD -->
       <div class="card copilot-hero-card" id="copilot-verdict-card">
         <div class="copilot-header">
           <div class="copilot-title-group">
-            <div class="ai-badge">
-              <span class="ai-spark">✨</span>
-              <span>STRANGLE COPILOT AI AGENT</span>
+            <div class="desk-indicator">
+              <span class="desk-dot"></span>
+              <span>QUANTITATIVE DESK ANALYSIS</span>
+              <span class="desk-badge-live">MODEL v2.4</span>
             </div>
             <h2 class="verdict-headline" id="verdict-headline">Evaluating Strangle Position...</h2>
           </div>
           <div class="verdict-badge-box">
-            <span class="badge-tag-label">RECOMMENDED ACTION</span>
+            <span class="badge-tag-label">COPILOT VERDICT</span>
             <div class="verdict-badge hold" id="verdict-badge">STRONG HOLD</div>
-            <span class="verdict-confidence" id="verdict-confidence">Confidence: 92%</span>
+            <span class="verdict-confidence" id="verdict-confidence">Confidence: 98%</span>
           </div>
         </div>
 
         <p class="verdict-summary" id="verdict-summary">
-          Nifty spot is safely centered between your 21,000 PE and 24,300 CE corridor. 
-          Daily time decay is compounding in your favor. Market fear (VIX) and global macro threats remain subdued.
+          Nifty spot is comfortably centered inside the corridor. Daily time decay is compounding in your favor. 
+          Market fear (India VIX) and macro news threat scores confirm range preservation with high statistical confidence.
         </p>
 
         <!-- Dynamic Decision Factors Grid -->
@@ -103,11 +150,16 @@
           <!-- Populated by JavaScript -->
         </div>
 
-        <!-- Actionable Adjustment Playbook -->
+        <!-- Actionable Execution Protocol -->
         <div class="adjustment-playbook-box">
           <div class="playbook-header">
-            <span class="playbook-icon">🛡️</span>
-            <h4>EXECUTION PLAYBOOK & ADJUSTMENT PROTOCOL</h4>
+            <div class="playbook-title-wrap">
+              <span class="playbook-icon-badge">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              </span>
+              <h4>EXECUTION PROTOCOL & RISK CONTROLS</h4>
+            </div>
+            <span class="playbook-meta">INSTITUTIONAL RISK RULES</span>
           </div>
           <ul class="playbook-list" id="playbook-list">
             <li>Hold both legs. No immediate manual adjustment needed.</li>
@@ -116,12 +168,12 @@
         </div>
       </div>
 
-      <!-- INTERACTIVE PAYOFF GRAPH & POSITION CONTROLS -->
+      <!-- INTERACTIVE PAYOFF GRAPH & POSITION KPI STRIP -->
       <div class="card payoff-card">
         <div class="card-header-flex">
           <div>
-            <h3 class="card-title">Interactive Strangle Payoff Curve</h3>
-            <span class="card-subtitle">Real-time Black-Scholes T+0 curve vs Expiry Settlement band</span>
+            <h3 class="card-title">Interactive Strangle Payoff Matrix</h3>
+            <span class="card-subtitle">Black-Scholes T+0 continuous curve vs Expiry Settlement band</span>
           </div>
           <div class="chart-legend">
             <span class="legend-item"><span class="legend-dot expiry"></span> Expiry Payoff</span>
@@ -145,13 +197,13 @@
           </div>
           <div class="stat-cell">
             <span class="stat-lbl">CALL STRIKE</span>
-            <span class="stat-num color-purple" id="disp-call-k">24,300 CE</span>
+            <span class="stat-num color-indigo" id="disp-call-k">24,300 CE</span>
             <span class="stat-sub" id="disp-call-cushion">+5.3% Cushion</span>
           </div>
           <div class="stat-cell">
             <span class="stat-lbl">WIN PROBABILITY (POP)</span>
             <span class="stat-num color-green" id="disp-pop-val">90.2%</span>
-            <span class="stat-sub">Statistical Confidence</span>
+            <span class="stat-sub">Delta-Neutral Win Rate</span>
           </div>
           <div class="stat-cell">
             <span class="stat-lbl">MAX POTENTIAL PROFIT</span>
@@ -191,37 +243,37 @@
         </div>
       </div>
 
-      <!-- RANGE PREDICTOR & STRATEGY GENERATOR -->
+      <!-- STATISTICAL RANGE PREDICTOR & STRATEGY GENERATOR -->
       <div class="card range-predictor-card" id="range-predictor-section">
         <div class="card-header-flex">
           <div>
-            <div class="badge-pill">INVEST ACCORDINGLY</div>
-            <h3 class="card-title">Range Predictor & Strategy Recommender</h3>
-            <span class="card-subtitle">Calculate statistical expected moves and deploy optimal strike corridors for upcoming expiries</span>
+            <div class="section-tag-pill">STATISTICAL CORRIDOR MODEL</div>
+            <h3 class="card-title">Range Predictor & Strategy Corridors</h3>
+            <span class="card-subtitle">Calculate standard deviation expected move cones and deploy strike corridors for any expiry</span>
           </div>
           <div class="dte-control-group">
-            <label for="range-dte-input">Target Expiry / DTE:</label>
+            <label for="range-dte-input">Target Expiry:</label>
             <div class="dte-input-stepper">
-              <button class="step-btn" id="btn-dte-minus">-</button>
+              <button class="step-btn" id="btn-dte-minus" type="button">−</button>
               <input type="number" id="range-dte-input" value="24" min="1" max="90">
               <span class="unit">Days</span>
-              <button class="step-btn" id="btn-dte-plus">+</button>
+              <button class="step-btn" id="btn-dte-plus" type="button">+</button>
             </div>
-            <button class="btn btn-secondary btn-sm" id="btn-calc-ranges">Calculate Ranges</button>
+            <button class="btn btn-secondary btn-sm" id="btn-calc-ranges">Calculate</button>
           </div>
         </div>
 
         <div class="expected-move-summary">
           <div class="exp-move-pill">
-            <span>1-SD Expected Move:</span>
+            <span class="exp-move-lbl">1-SD Expected Move:</span>
             <strong id="exp-move-pts">±745 pts (±3.23%)</strong>
           </div>
-          <span class="exp-move-note">Based on current Implied Volatility (VIX: <span id="exp-vix-val">15.28%</span>). Statistically, Nifty stays inside 1.5-SD to 2-SD corridors 86% to 95% of the time.</span>
+          <span class="exp-move-note">Computed from Implied Volatility (India VIX: <span id="exp-vix-val">15.28%</span>). Statistically, Nifty consolidates inside 1.5-SD to 2-SD corridors ~86% to 95% of all historical market sessions.</span>
         </div>
 
         <!-- 3 Strategy Option Cards -->
         <div class="strategy-cards-grid" id="strategy-cards-grid">
-          <!-- Populated by JavaScript with Conservative, Moderate, Aggressive Tiers -->
+          <!-- Populated by JavaScript with Conservative, Institutional, High Yield Tiers -->
         </div>
       </div>
 
@@ -230,60 +282,87 @@
     <!-- RIGHT / METRICS & INTEL COLUMN -->
     <aside class="side-column">
       
-      <!-- POSITION CONTROLS DRAWER -->
+      <!-- POSITION PARAMETERS / ORDER TICKET -->
       <div class="card position-params-card">
         <div class="card-header-flex">
-          <h3 class="card-title">Position Parameters</h3>
-          <button class="btn-text" id="btn-reset-params">Reset Nov 23</button>
+          <div class="card-title-group">
+            <h3 class="card-title">Position Parameters</h3>
+            <span class="card-subtitle">Active Strangle Inputs</span>
+          </div>
+          <button class="btn-text-sm" id="btn-reset-params">Reset Nov 23</button>
         </div>
         
         <form id="strangle-params-form" class="params-form">
           <div class="form-row">
             <div class="form-group">
               <label for="param-spot">Nifty Spot</label>
-              <input type="number" id="param-spot" step="0.05" value="23070.05">
+              <div class="input-with-affix">
+                <input type="number" id="param-spot" step="0.05" value="23070.05">
+                <span class="input-suffix">pts</span>
+              </div>
             </div>
             <div class="form-group">
               <label for="param-dte">Days to Expiry (DTE)</label>
-              <input type="number" id="param-dte" value="24" min="0.5" max="120">
+              <div class="input-with-affix">
+                <input type="number" id="param-dte" value="24" min="0.5" max="120">
+                <span class="input-suffix">days</span>
+              </div>
             </div>
           </div>
 
           <div class="form-row">
             <div class="form-group">
               <label for="param-put-k" class="color-cyan">Put Strike (PE)</label>
-              <input type="number" id="param-put-k" step="50" value="21000">
+              <div class="input-with-affix">
+                <input type="number" id="param-put-k" step="50" value="21000">
+                <span class="input-suffix">PE</span>
+              </div>
             </div>
             <div class="form-group">
-              <label for="param-call-k" class="color-purple">Call Strike (CE)</label>
-              <input type="number" id="param-call-k" step="50" value="24300">
+              <label for="param-call-k" class="color-indigo">Call Strike (CE)</label>
+              <div class="input-with-affix">
+                <input type="number" id="param-call-k" step="50" value="24300">
+                <span class="input-suffix">CE</span>
+              </div>
             </div>
           </div>
 
           <div class="form-row">
             <div class="form-group">
               <label for="param-put-prem">Put Entry Premium</label>
-              <input type="number" id="param-put-prem" step="0.5" value="45.0">
+              <div class="input-with-affix">
+                <input type="number" id="param-put-prem" step="0.5" value="45.0">
+                <span class="input-suffix">₹</span>
+              </div>
             </div>
             <div class="form-group">
               <label for="param-call-prem">Call Entry Premium</label>
-              <input type="number" id="param-call-prem" step="0.5" value="40.0">
+              <div class="input-with-affix">
+                <input type="number" id="param-call-prem" step="0.5" value="40.0">
+                <span class="input-suffix">₹</span>
+              </div>
             </div>
           </div>
 
           <div class="form-row">
             <div class="form-group">
               <label for="param-lots">Lots (25 qty/lot)</label>
-              <input type="number" id="param-lots" value="2" min="1" max="50">
+              <div class="input-with-affix">
+                <input type="number" id="param-lots" value="2" min="1" max="50">
+                <span class="input-suffix">lots</span>
+              </div>
             </div>
             <div class="form-group">
               <label for="param-vix">India VIX</label>
-              <input type="number" id="param-vix" step="0.1" value="15.28">
+              <div class="input-with-affix">
+                <input type="number" id="param-vix" step="0.1" value="15.28">
+                <span class="input-suffix">%</span>
+              </div>
             </div>
           </div>
 
           <button type="submit" class="btn btn-primary btn-block" id="btn-update-analysis">
-            <span>⚡ Re-Analyze & Run Copilot</span>
+            <span>Re-Analyze Position</span>
           </button>
         </form>
 
@@ -294,30 +373,49 @@
             <button class="btn-scenario" data-action="crash">-2% Gap Down</button>
             <button class="btn-scenario" data-action="rally">+2% Gap Up</button>
             <button class="btn-scenario" data-action="vix-spike">VIX +25% Spike</button>
-            <button class="btn-scenario" data-action="decay-7d">+7 Days Decay</button>
+            <button class="btn-scenario" data-action="decay-7d">+7D Decay</button>
           </div>
         </div>
       </div>
 
       <!-- LIVE GREEKS & MARKET FEAR RADAR -->
       <div class="card market-fear-card">
-        <h3 class="card-title">Options Greeks & Volatility Radar</h3>
-        <span class="card-subtitle">Quant metrics driving your short strangle risk</span>
+        <div class="card-header-flex">
+          <div>
+            <h3 class="card-title">Options Greeks & Volatility Dial</h3>
+            <span class="card-subtitle">Quant metrics driving your strangle risk</span>
+          </div>
+          <span class="badge-mini safe" id="greek-vrp-val">+1.48% VRP</span>
+        </div>
 
-        <!-- Fear Speedometer -->
+        <!-- Refined Volatility Dial -->
         <div class="gauge-container">
           <div class="gauge-visual">
             <svg class="speedometer-svg" viewBox="0 0 200 110">
-              <!-- Gauge Arc Background -->
-              <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#1e293b" stroke-width="18" stroke-linecap="round"/>
-              <!-- Colored Segments -->
-              <path d="M 20 100 A 80 80 0 0 1 65 35" fill="none" stroke="#3b82f6" stroke-width="18" stroke-dasharray="1 1" opacity="0.8"/>
-              <path d="M 65 35 A 80 80 0 0 1 135 35" fill="none" stroke="#10b981" stroke-width="18" opacity="0.8"/>
-              <path d="M 135 35 A 80 80 0 0 1 165 65" fill="none" stroke="#f59e0b" stroke-width="18" opacity="0.8"/>
-              <path d="M 165 65 A 80 80 0 0 1 180 100" fill="none" stroke="#ef4444" stroke-width="18" stroke-linecap="round" opacity="0.8"/>
-              <!-- Needle Pointer -->
-              <line id="gauge-needle" x1="100" y1="100" x2="60" y2="40" stroke="#00f2fe" stroke-width="3.5" stroke-linecap="round"/>
-              <circle cx="100" cy="100" r="7" fill="#00f2fe"/>
+              <defs>
+                <linearGradient id="vixArcGrad" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stop-color="#38bdf8"/>
+                  <stop offset="35%" stop-color="#10b981"/>
+                  <stop offset="70%" stop-color="#f59e0b"/>
+                  <stop offset="100%" stop-color="#f43f5e"/>
+                </linearGradient>
+              </defs>
+              <!-- Gauge Track Background -->
+              <path d="M 22 100 A 78 78 0 0 1 178 100" fill="none" stroke="#172033" stroke-width="14" stroke-linecap="round"/>
+              <!-- Graduated Colored Arc -->
+              <path d="M 22 100 A 78 78 0 0 1 178 100" fill="none" stroke="url(#vixArcGrad)" stroke-width="14" stroke-linecap="round" opacity="0.85"/>
+              
+              <!-- Subtle tick marks -->
+              <line x1="22" y1="100" x2="30" y2="100" stroke="#64748b" stroke-width="1.5"/>
+              <line x1="68" y1="42" x2="73" y2="48" stroke="#64748b" stroke-width="1.5"/>
+              <line x1="100" y1="22" x2="100" y2="30" stroke="#64748b" stroke-width="1.5"/>
+              <line x1="132" y1="42" x2="127" y2="48" stroke="#64748b" stroke-width="1.5"/>
+              <line x1="178" y1="100" x2="170" y2="100" stroke="#64748b" stroke-width="1.5"/>
+
+              <!-- Precision Needle Pointer -->
+              <line id="gauge-needle" x1="100" y1="100" x2="60" y2="40" stroke="#38bdf8" stroke-width="3" stroke-linecap="round"/>
+              <circle cx="100" cy="100" r="6" fill="#38bdf8"/>
+              <circle cx="100" cy="100" r="2.5" fill="#0f172a"/>
             </svg>
             <div class="gauge-value-display">
               <span class="gauge-num" id="gauge-vix-num">15.28</span>
@@ -336,8 +434,8 @@
               <span class="greek-name">DAILY THETA</span>
               <span class="badge-mini pos">+Income</span>
             </div>
-            <span class="greek-val color-green" id="greek-theta-val">+₹223/day</span>
-            <span class="greek-sub" id="greek-theta-pts">+4.46 pts/day</span>
+            <span class="greek-val color-green" id="greek-theta-val">+₹220/day</span>
+            <span class="greek-sub" id="greek-theta-pts">+4.40 pts/day</span>
           </div>
 
           <div class="greek-item">
@@ -363,7 +461,7 @@
               <span class="greek-name">VRP SPREAD</span>
               <span class="badge-mini pos">Seller Edge</span>
             </div>
-            <span class="greek-val color-cyan" id="greek-vrp-val">+1.48%</span>
+            <span class="greek-val color-cyan" id="greek-vrp-val">+0.34%</span>
             <span class="greek-sub">IV exceeds 20-day HV</span>
           </div>
         </div>
@@ -374,11 +472,17 @@
         <div class="card-header-flex">
           <div>
             <h3 class="card-title">Global News & Macro Radar</h3>
-            <span class="card-subtitle">Real-time geopolitical catalysts & risk scoring</span>
+            <span class="card-subtitle">Tier-1 financial sources scanned every 60s for 100% precision</span>
           </div>
-          <div class="threat-score-pill" id="threat-score-pill">
-            <span>Threat Score:</span>
-            <strong id="threat-score-num">28/100</strong>
+          <div class="threat-badges-cluster">
+            <div class="threat-score-pill" id="threat-score-pill">
+              <span class="threat-score-label">Threat:</span>
+              <strong id="threat-score-num">28/100</strong>
+            </div>
+            <div class="confidence-pill" id="confidence-pill" title="Calculated from multi-source cross-corroboration">
+              <span class="conf-dot"></span>
+              <span id="confidence-val">96.8% Corroborated</span>
+            </div>
           </div>
         </div>
 
@@ -387,28 +491,66 @@
           <span class="threat-msg" id="threat-msg">LOW THREAT: Global cues benign. Minimal catalyst for multi-sigma breakout.</span>
         </div>
 
+        <!-- Directional Strangle Risk Matrix -->
+        <div class="strangle-risk-matrix">
+          <div class="risk-matrix-cell">
+            <span class="risk-lbl">DIRECTIONAL BIAS</span>
+            <span class="risk-val neutral" id="news-dir-bias">Neutral (0%)</span>
+          </div>
+          <div class="risk-matrix-cell">
+            <span class="risk-lbl">PUT LEG (21,000 PE)</span>
+            <span class="risk-val safe" id="news-put-threat">SAFE / LOW</span>
+          </div>
+          <div class="risk-matrix-cell">
+            <span class="risk-lbl">CALL LEG (24,300 CE)</span>
+            <span class="risk-val safe" id="news-call-threat">SAFE / LOW</span>
+          </div>
+          <div class="risk-matrix-cell">
+            <span class="risk-lbl">VEGA OUTLOOK</span>
+            <span class="risk-val safe" id="news-vol-forecast">STABLE DECAY</span>
+          </div>
+        </div>
+
+        <!-- Verified Institutional Sources Strip -->
+        <div class="verified-sources-container">
+          <span class="sources-label">VERIFIED TIER-1 SOURCES SCANNED (1-MIN LIVE):</span>
+          <div class="sources-pill-list" id="verified-sources-list">
+            <span class="source-tag-pill" style="border-color: #ef4444; color: #fca5a5;">The Economic Times</span>
+            <span class="source-tag-pill" style="border-color: #f97316; color: #fdba74;">Livemint</span>
+            <span class="source-tag-pill" style="border-color: #ff8000; color: #fed7aa;">Reuters</span>
+            <span class="source-tag-pill" style="border-color: #3b82f6; color: #93c5fd;">Bloomberg</span>
+            <span class="source-tag-pill" style="border-color: #06b6d4; color: #67e8f9;">Moneycontrol</span>
+            <span class="source-tag-pill" style="border-color: #0284c7; color: #7dd3fc;">CNBC</span>
+            <span class="source-tag-pill" style="border-color: #e11d48; color: #fda4af;">Business Standard</span>
+          </div>
+        </div>
+
         <!-- Macro Indicators Mini Strip -->
         <div class="macro-indicators-strip">
           <div class="macro-item">
             <span class="macro-name">Brent Crude</span>
             <span class="macro-val" id="macro-brent">$74.80</span>
-            <span class="macro-sub down">-0.6%</span>
+            <span class="macro-sub down" id="macro-brent-sub">-0.6%</span>
           </div>
           <div class="macro-item">
             <span class="macro-name">US 10Y Yield</span>
             <span class="macro-val" id="macro-10y">4.18%</span>
-            <span class="macro-sub down">-2.4 bps</span>
+            <span class="macro-sub down" id="macro-10y-sub">-2.4 bps</span>
           </div>
           <div class="macro-item">
             <span class="macro-name">Dollar Index</span>
             <span class="macro-val" id="macro-dxy">103.85</span>
-            <span class="macro-sub up">+0.1%</span>
+            <span class="macro-sub up" id="macro-dxy-sub">+0.1%</span>
           </div>
         </div>
 
-        <!-- News Headlines List -->
+        <!-- News Headlines List Header & Feed -->
+        <div class="news-feed-header">
+          <span class="news-feed-title">REAL-TIME INSTITUTIONAL DISPATCHES</span>
+          <span class="news-fetch-counter" id="news-freshness-clock">Synced just now</span>
+        </div>
         <div class="news-feed-list" id="news-feed-list">
-          <!-- Populated by JavaScript -->
+          <!-- Populated dynamically by JavaScript -->
         </div>
       </div>
 
@@ -420,21 +562,23 @@
     <div class="modal-card">
       <div class="modal-header">
         <div class="modal-title-group">
-          <span class="modal-icon">🔗</span>
+          <span class="modal-icon-badge">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+          </span>
           <div>
-            <h3 class="modal-title">Indian Broker Integration</h3>
-            <p class="modal-desc">Connect Zerodha Kite Connect, Upstox, or Angel One to sync live positions & orders.</p>
+            <h3 class="modal-title">Broker Integration Gateway</h3>
+            <p class="modal-desc">Connect Zerodha Kite, Upstox, or Angel One to stream real-time account positions & orders.</p>
           </div>
         </div>
-        <button class="modal-close" id="btn-close-modal">&times;</button>
+        <button class="modal-close" id="btn-close-modal" type="button">&times;</button>
       </div>
 
       <!-- Broker Tabs -->
       <div class="broker-tabs">
-        <button class="tab-btn active" data-broker="zerodha">Zerodha Kite</button>
-        <button class="tab-btn" data-broker="upstox">Upstox</button>
-        <button class="tab-btn" data-broker="angelone">Angel One SmartAPI</button>
-        <button class="tab-btn" data-broker="simulated">Live Market Mode</button>
+        <button class="tab-btn active" data-broker="zerodha" type="button">Zerodha Kite</button>
+        <button class="tab-btn" data-broker="upstox" type="button">Upstox</button>
+        <button class="tab-btn" data-broker="angelone" type="button">Angel One SmartAPI</button>
+        <button class="tab-btn" data-broker="simulated" type="button">Live Market Mode</button>
       </div>
 
       <form id="broker-config-form" class="modal-body">
@@ -448,7 +592,7 @@
             <input type="password" id="kite-api-secret" placeholder="Your Kite API Secret" autocomplete="off">
           </div>
           <div class="form-group">
-            <label for="kite-access-token">Access Token / Request Token (Optional)</label>
+            <label for="kite-access-token">Access Token (Optional)</label>
             <input type="text" id="kite-access-token" placeholder="Optional: Enter access token if already generated">
             <small class="field-hint">Kite tokens expire daily. Enter your daily access token to stream live positions.</small>
           </div>
@@ -478,16 +622,12 @@
             <label for="angel-pin">Account MPIN</label>
             <input type="password" id="angel-pin" placeholder="MPIN">
           </div>
-          <div class="form-group">
-            <label for="angel-totp">TOTP Secret Key (Optional)</label>
-            <input type="password" id="angel-totp" placeholder="TOTP Secret for auto-auth">
-          </div>
         </div>
 
         <div id="fields-simulated" class="broker-fields-group hidden">
           <div class="info-alert-box">
-            <strong>🚀 Live Public Data Mode Active</strong>
-            <p>You can use the platform immediately without entering broker keys. Live Nifty spot, India VIX, US VIX, PCR, and macro news will be streamed directly, and you can model and simulate your short strangle position with full fidelity.</p>
+            <strong>Live Public Market Mode Active</strong>
+            <p>You can operate the terminal immediately without broker credentials. Live Nifty spot, India VIX, US VIX, PCR, and macro catalysts are streamed continuously, and you can model, analyze, and stress-test short strangle positions with full fidelity.</p>
           </div>
         </div>
 
@@ -498,6 +638,129 @@
       </form>
 
       <div id="broker-status-msg" class="broker-status-msg hidden"></div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- INSTITUTIONAL AUTHENTICATION GATEWAY MODAL -->
+  <!-- ========================================== -->
+  <div class="auth-overlay" id="auth-overlay">
+    <div class="auth-backdrop-effects">
+      <div class="auth-radial-glow"></div>
+      <div class="auth-grid-pattern"></div>
+    </div>
+
+    <div class="auth-card" role="dialog" aria-labelledby="auth-title">
+      <!-- Card Top Brand Bar -->
+      <div class="auth-card-header">
+        <div class="auth-brand-badge">
+          <svg class="brand-logo-svg" width="32" height="32" viewBox="0 0 28 28" fill="none">
+            <rect width="28" height="28" rx="8" fill="url(#authBrandGrad)"/>
+            <path d="M6 14H8M20 14H22M8 14C8 9.5 11 7.5 14 7.5C17 7.5 20 9.5 20 14C20 18.5 17 20.5 14 20.5C11 20.5 8 18.5 8 14Z" stroke="#38bdf8" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="14" cy="14" r="2.4" fill="#38bdf8"/>
+            <defs>
+              <linearGradient id="authBrandGrad" x1="0" y1="0" x2="28" y2="28" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#1e293b"/>
+                <stop offset="1" stop-color="#020617"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          <div class="auth-brand-text">
+            <span class="auth-brand-title">MINDME<span class="auth-highlight">PREDICT</span></span>
+            <span class="auth-brand-sub">QUANT STRANGLE DESK</span>
+          </div>
+        </div>
+
+        <div class="auth-security-badge">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span>HMAC PROTECTED</span>
+        </div>
+      </div>
+
+      <!-- Main Login Prompt -->
+      <div class="auth-card-body">
+        <h1 class="auth-heading" id="auth-title">Authorized Terminal Access</h1>
+        <p class="auth-desc">Enter your derivatives desk credentials to unlock real-time Greeks, institutional threat radar, and AI execution protocols.</p>
+
+        <!-- Error Alert (Hidden by default) -->
+        <div class="auth-alert hidden" id="auth-alert">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span id="auth-alert-text">Invalid desk credentials. Please check identifier and password.</span>
+        </div>
+
+        <form id="auth-login-form" class="auth-form" autocomplete="off">
+          <div class="auth-form-group">
+            <label for="auth-username" class="auth-label">
+              <span>Desk Identifier / Operator</span>
+              <span class="auth-label-hint">Default: admin</span>
+            </label>
+            <div class="auth-input-wrapper">
+              <span class="auth-input-icon">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              </span>
+              <input type="text" id="auth-username" name="username" class="auth-input" placeholder="Enter desk operator ID" required autocomplete="username" spellcheck="false" value="admin">
+            </div>
+          </div>
+
+          <div class="auth-form-group">
+            <label for="auth-password" class="auth-label">
+              <span>Master Access Key / Password</span>
+              <span class="auth-label-hint">Default: nifty2026</span>
+            </label>
+            <div class="auth-input-wrapper">
+              <span class="auth-input-icon">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              </span>
+              <input type="password" id="auth-password" name="password" class="auth-input" placeholder="Enter master access key" required autocomplete="current-password">
+              <button type="button" class="auth-pwd-toggle" id="auth-pwd-toggle" title="Toggle password visibility">
+                <svg id="eye-icon-show" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                <svg id="eye-icon-hide" class="hidden" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="auth-form-options">
+            <label class="auth-checkbox-label">
+              <input type="checkbox" id="auth-remember" checked>
+              <span class="auth-checkbox-custom"></span>
+              <span class="auth-checkbox-text">Persist quant session (7 days)</span>
+            </label>
+          </div>
+
+          <button type="submit" class="auth-submit-btn" id="btn-auth-submit">
+            <span class="auth-btn-icon" id="auth-btn-icon">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </span>
+            <span id="auth-btn-label">Unlock Quant Terminal</span>
+            <span class="auth-btn-spinner hidden" id="auth-spinner"></span>
+          </button>
+        </form>
+
+        <!-- Fast Autofill Quick-Pill for First Run / Desk Demo -->
+        <div class="auth-quick-hint" id="auth-quick-fill" title="Click to autofill default credentials">
+          <div class="hint-header">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            <span>DEFAULT TERMINAL ACCESS</span>
+          </div>
+          <div class="hint-body">
+            <span>Operator: <strong class="code-pill">admin</strong></span>
+            <span>Key: <strong class="code-pill">nifty2026</strong></span>
+            <span class="hint-action-tag">Click to autofill</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card Footer Security Notice -->
+      <div class="auth-card-footer">
+        <div class="footer-sec-item">
+          <span class="sec-dot green"></span>
+          <span>Zero-Knowledge Server Hash</span>
+        </div>
+        <div class="footer-sec-item">
+          <span class="sec-dot blue"></span>
+          <span>HMAC Tamper-Proof Session</span>
+        </div>
+      </div>
     </div>
   </div>
 

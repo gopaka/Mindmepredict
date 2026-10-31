@@ -1,0 +1,33 @@
+# Version control & local environment
+.git
+.gitignore
+.venv
+venv/
+env/
+.env
+
+# Python bytecode & cache
+__pycache__/
+*__pycache__*
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local OS & editor metadata
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Secrets & local runtime state
+.secret_key
+data/
+*.log
+
+# Assistant artifacts & temporary logs
+.system_generated/
+scratch/
+

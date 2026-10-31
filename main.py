@@ -2,13 +2,19 @@
 MindMePredict - StrangleCopilot Backend Server
 FastAPI application providing APIs for options mathematics, Greeks analysis,
 market fear / India VIX radar, news threat evaluation, AI decision copilot, and broker sync.
+Includes 1-minute periodic background news & macro worker and Server-Sent Events (SSE).
 """
 
+import asyncio
+from contextlib import asynccontextmanager
+import json
 import os
-from typing import Optional
-from fastapi import FastAPI, HTTPException
+import time
+from typing import Optional, Set
+from fastapi import FastAPI, HTTPException, Query, Depends, Header
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
 from engine.options_math import analyze_short_strangle, generate_payoff_curve, NIFTY_LOT_SIZE
@@ -17,11 +23,92 @@ from engine.sentiment_scanner import fetch_global_news_sentiment
 from engine.decision_agent import evaluate_strangle_decision
 from engine.range_predictor import calculate_expected_ranges
 from engine.broker_client import IndianBrokerManager
+from engine.auth import (
+    authenticate_user,
+    create_access_token,
+    verify_access_token,
+    get_current_user
+)
+
+# -------------------------------------------------------------
+# Real-Time SSE Event Broadcasting & 1-Minute Background Worker
+# -------------------------------------------------------------
+_SSE_CLIENTS: Set[asyncio.Queue] = set()
+
+
+async def broadcast_live_event(event_data: dict):
+    """Notify all connected dashboard clients of fresh market & news data."""
+    if not _SSE_CLIENTS:
+        return
+    msg = f"data: {json.dumps(event_data)}\n\n"
+    for queue in list(_SSE_CLIENTS):
+        try:
+            await queue.put(msg)
+        except Exception:
+            _SSE_CLIENTS.discard(queue)
+
+
+async def periodic_news_and_market_worker():
+    """
+    Background worker that runs every 60 seconds (1 minute).
+    Fetches fresh news and market data, keeping caches primed and pushing
+    real-time notifications to connected clients.
+    """
+    print("[MINDMEPREDICT] Starting 1-minute background news & market synchronization worker...")
+    # Initial pre-heat
+    try:
+        fetch_live_market_stats(use_cache=False)
+        fetch_global_news_sentiment(force_refresh=True)
+    except Exception as e:
+        print(f"[MINDMEPREDICT PREHEAT ERROR] {e}")
+
+    while True:
+        await asyncio.sleep(60)
+        try:
+            # Refresh market data and news sentiment
+            market = fetch_live_market_stats(use_cache=False)
+            news = fetch_global_news_sentiment(force_refresh=True)
+            timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
+            print(
+                f"[LIVE SYNC - 1m] Synced {len(news.get('news_items', []))} news items across "
+                f"{news.get('total_sources_scanned', 0)} sources. Threat: {news.get('threat_score')}/100 "
+                f"({news.get('threat_level')}) at {timestamp}"
+            )
+
+            # Broadcast to SSE subscribers
+            await broadcast_live_event({
+                "type": "market_sync",
+                "timestamp": timestamp,
+                "spot": market.get("spot"),
+                "vix": market.get("vix"),
+                "threat_score": news.get("threat_score"),
+                "threat_level": news.get("threat_level"),
+                "prediction_confidence": news.get("prediction_confidence")
+            })
+        except asyncio.CancelledError:
+            break
+        except Exception as e:
+            print(f"[LIVE SYNC ERROR] Error during periodic sync: {e}")
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup: Launch 1-minute periodic background worker
+    worker_task = asyncio.create_task(periodic_news_and_market_worker())
+    yield
+    # Shutdown: cancel task cleanly
+    worker_task.cancel()
+    try:
+        await worker_task
+    except asyncio.CancelledError:
+        pass
+
 
 app = FastAPI(
     title="MindMePredict - StrangleCopilot",
     description="Quantitative Decision-Support Agent for Nifty Short Strangle Strategies",
-    version="1.0.0"
+    version="1.0.0",
+    lifespan=lifespan
 )
 
 app.add_middleware(
@@ -67,11 +154,58 @@ class BrokerConfigRequest(BaseModel):
     totp_key: Optional[str] = ""
 
 
+class LoginRequest(BaseModel):
+    username: str = Field(..., description="Quant Desk Username / Operator ID")
+    password: str = Field(..., description="Access Key / Password")
+
+
 # -------------------------------------------------------------
-# API Endpoints
+# Authentication Endpoints
+# -------------------------------------------------------------
+@app.post("/api/auth/login")
+def auth_login(req: LoginRequest):
+    """
+    Authenticate quant desk operator and return a signed HMAC session token.
+    Default credentials: admin / nifty2026 (configurable via env vars).
+    """
+    user = authenticate_user(req.username, req.password)
+    if not user:
+        raise HTTPException(
+            status_code=401,
+            detail="Access Denied: Invalid desk credentials. Please check operator ID and password."
+        )
+    token = create_access_token(user)
+    return {
+        "status": "authenticated",
+        "token": token,
+        "user": user,
+        "expires_in_days": 7
+    }
+
+
+@app.get("/api/auth/me")
+def auth_me(current_user: dict = Depends(get_current_user)):
+    """Verify active session token and return authorized operator profile."""
+    return {
+        "authenticated": True,
+        "user": current_user
+    }
+
+
+@app.post("/api/auth/logout")
+def auth_logout():
+    """Terminate desk session and invalidate local client state."""
+    return {
+        "status": "logged_out",
+        "message": "Desk session terminated. Terminal locked."
+    }
+
+
+# -------------------------------------------------------------
+# Protected API Endpoints
 # -------------------------------------------------------------
 @app.get("/api/market")
-def get_market_overview():
+def get_market_overview(user: dict = Depends(get_current_user)):
     """Live Nifty spot, India VIX, US VIX, 20-day HV, PCR, and Max Pain."""
     stats = fetch_live_market_stats()
     pcr_data = compute_pcr_and_max_pain(stats["spot"])
@@ -82,13 +216,87 @@ def get_market_overview():
 
 
 @app.get("/api/news")
-def get_news_and_catalysts():
-    """Global macro news, threat score, crude oil, yields, and risk rating."""
-    return fetch_global_news_sentiment()
+def get_news_and_catalysts(
+    force_refresh: bool = Query(False),
+    user: dict = Depends(get_current_user)
+):
+    """Global macro news, threat score, crude oil, yields, and risk rating (1-minute cache)."""
+    return fetch_global_news_sentiment(force_refresh=force_refresh)
+
+
+@app.post("/api/sync-now")
+async def trigger_manual_sync(user: dict = Depends(get_current_user)):
+    """Immediately triggers a live re-fetch across news feeds and market data."""
+    market = fetch_live_market_stats(use_cache=False)
+    news = fetch_global_news_sentiment(force_refresh=True)
+    timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
+    await broadcast_live_event({
+        "type": "market_sync",
+        "timestamp": timestamp,
+        "spot": market.get("spot"),
+        "vix": market.get("vix"),
+        "threat_score": news.get("threat_score"),
+        "threat_level": news.get("threat_level"),
+        "prediction_confidence": news.get("prediction_confidence")
+    })
+    return {
+        "status": "success",
+        "timestamp": timestamp,
+        "message": f"Synced {len(news.get('news_items', []))} news items across {news.get('total_sources_scanned', 0)} sources."
+    }
+
+
+@app.get("/api/stream/events")
+async def stream_live_events(
+    token: Optional[str] = Query(None),
+    authorization: Optional[str] = Header(None)
+):
+    """
+    Server-Sent Events (SSE) stream delivering real-time 1-minute live updates.
+    Secured via HMAC token check.
+    """
+    extracted_token = None
+    if authorization and authorization.lower().startswith("bearer "):
+        extracted_token = authorization[7:].strip()
+    elif token:
+        extracted_token = token.strip()
+
+    payload = verify_access_token(extracted_token) if extracted_token else None
+    if not payload:
+        raise HTTPException(
+            status_code=401,
+            detail="Unauthorized: Valid session token required for live event stream."
+        )
+
+    queue: asyncio.Queue = asyncio.Queue()
+    _SSE_CLIENTS.add(queue)
+
+    async def event_generator():
+        try:
+            init_data = json.dumps({"type": "connected", "message": "Live dynamic 1-minute stream connected", "interval": 60})
+            yield f"data: {init_data}\n\n"
+            while True:
+                try:
+                    msg = await asyncio.wait_for(queue.get(), timeout=20.0)
+                    yield msg
+                except asyncio.TimeoutError:
+                    yield ": keepalive\n\n"
+        finally:
+            _SSE_CLIENTS.discard(queue)
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no"
+        }
+    )
 
 
 @app.post("/api/analyze-strangle")
-def analyze_strangle(req: StrangleRequest):
+def analyze_strangle(req: StrangleRequest, user: dict = Depends(get_current_user)):
     """
     Run full quantitative analysis + AI Copilot Hold/Sell/Hedge decision.
     """
@@ -130,7 +338,7 @@ def analyze_strangle(req: StrangleRequest):
 
 
 @app.post("/api/payoff-curve")
-def get_payoff_data(req: StrangleRequest):
+def get_payoff_data(req: StrangleRequest, user: dict = Depends(get_current_user)):
     """
     Generate coordinates for interactive Canvas payoff chart.
     """
@@ -152,7 +360,7 @@ def get_payoff_data(req: StrangleRequest):
 
 
 @app.post("/api/range-predict")
-def predict_ranges(req: RangePredictRequest):
+def predict_ranges(req: RangePredictRequest, user: dict = Depends(get_current_user)):
     """
     Calculate 1-SD, 1.5-SD, and 2-SD expected moves and recommend strike corridors.
     """
@@ -170,7 +378,7 @@ def predict_ranges(req: RangePredictRequest):
 
 
 @app.get("/api/broker/status")
-def get_broker_status():
+def get_broker_status(user: dict = Depends(get_current_user)):
     """Retrieve Indian broker connection status and synced positions."""
     status = IndianBrokerManager.get_status()
     active_pos = IndianBrokerManager.fetch_active_strangle_positions()
@@ -181,7 +389,7 @@ def get_broker_status():
 
 
 @app.post("/api/broker/configure")
-def configure_broker(req: BrokerConfigRequest):
+def configure_broker(req: BrokerConfigRequest, user: dict = Depends(get_current_user)):
     """Configure Zerodha Kite Connect, Upstox, or Angel One credentials."""
     creds = {
         "api_key": req.api_key or "",
